@@ -5,19 +5,20 @@ from .utils import parse_and_normalize_csv
 import psycopg2
 import os
 
+# Create app FIRST
 app = FastAPI()
 
-# ✅ Correct CORS setup AFTER FastAPI instance is created
+# THEN add CORS middleware to the existing app instance
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://guest-screening-dashboard.vercel.app"],  # or ["*"] for dev only
+    allow_origins=["https://guest-screening-dashboard.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# PostgreSQL connection string (Railway public URL)
-DATABASE_URL = "postgresql://postgres:TozLcXkFfNLZKyYIiHIYpDEtbnfgdwxj@ballast.proxy.rlwy.net:40063/railway"
+# Railway-provided DB URL
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:TozLcXkFfNLZKyYIiHIYpDEtbnfgdwxj@ballast.proxy.rlwy.net:40063/railway")
 
 @app.get("/")
 def health_check():
