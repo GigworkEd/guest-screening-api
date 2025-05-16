@@ -4,6 +4,15 @@ from .utils import parse_and_normalize_csv
 import psycopg2
 import os
 
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # or restrict to your Vercel URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app = FastAPI()
 
 # Example: load from Railway DATABASE_URL
