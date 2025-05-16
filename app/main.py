@@ -1,21 +1,22 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from .utils import parse_and_normalize_csv
 import psycopg2
 import os
 
-from fastapi.middleware.cors import CORSMiddleware
+app = FastAPI()
 
+# ✅ Correct CORS setup AFTER FastAPI instance is created
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # or restrict to your Vercel URL
+    allow_origins=["https://guest-screening-dashboard.vercel.app"],  # or ["*"] for dev only
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app = FastAPI()
 
-# Example: load from Railway DATABASE_URL
+# PostgreSQL connection string (Railway public URL)
 DATABASE_URL = "postgresql://postgres:TozLcXkFfNLZKyYIiHIYpDEtbnfgdwxj@ballast.proxy.rlwy.net:40063/railway"
 
 @app.get("/")
