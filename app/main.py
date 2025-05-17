@@ -1,29 +1,31 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from .utils import parse_and_normalize_csv
 import psycopg2
 import os
 
-# Create app FIRST
+# Initialize FastAPI app
 app = FastAPI()
 
-# THEN add CORS middleware to the existing app instance
+# Enable CORS so frontend (Vercel) can communicate
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://guest-screening-dashboard.vercel.app"],
+    allow_origins=["https://guest-screening-dashboard.vercel.app"],  # frontend domain
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Railway-provided DB URL
+# Load Railway DB URL
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:TozLcXkFfNLZKyYIiHIYpDEtbnfgdwxj@ballast.proxy.rlwy.net:40063/railway")
 
+# Health check endpoint
 @app.get("/")
 def health_check():
     return {"message": "API is running"}
 
+# Compare uploaded reservation file against DB
 @app.post("/compare-reservations")
 async def compare_reservations(file: UploadFile = File(...)):
     contents = await file.read()
@@ -52,3 +54,32 @@ async def compare_reservations(file: UploadFile = File(...)):
     conn.close()
 
     return JSONResponse(content={"matches": matched})
+
+# Add a new flagged guest record
+@app.post("/add-bad-guest")
+async def add_bad_guest(request: Request):
+    data = await request.json()
+
+    conn = psycopg2.connect(DATABASE_URL)
+    cursor = conn.cursor()
+
+    query = """
+    INSERT INTO bad_guests (full_name, email, phone, violation, amount_owed, notes, incident_property)
+    VALUES (%s, %s, %s, %s, %s, %s, %s);
+    """
+    values = (
+        data.get("full_name"),
+        data.get("email"),
+        data.get("phone"),
+        data.get("violation"),
+        data.get("amount_owed"),
+        data.get("notes"),
+        data.get("incident_property")
+    )
+
+    cursor.execute(query, values)
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return {"message": "Guest successfully flagged in the database."}
