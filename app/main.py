@@ -5,17 +5,17 @@ from .utils import parse_and_normalize_csv
 import psycopg2
 import os
 
-# Initialize FastAPI app
-app = FastAPI()
+app = FastAPI()  # ✅ Must come BEFORE CORS middleware
 
-# Enable CORS so frontend (Vercel) can communicate
+# ✅ CORRECT CORS setup
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://guest-screening-dashboard.vercel.app"],  # frontend domain
+    allow_origins=["https://guest-screening-dashboard.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Load Railway DB URL
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:TozLcXkFfNLZKyYIiHIYpDEtbnfgdwxj@ballast.proxy.rlwy.net:40063/railway")
