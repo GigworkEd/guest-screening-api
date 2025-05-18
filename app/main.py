@@ -73,7 +73,7 @@ async def add_bad_guest(request: Request):
         cursor = conn.cursor()
 
         query = """
-        INSERT INTO bad_guests (full_name, email, incident_type, amount_owed, notes, incident_property)
+        INSERT INTO bad_guests (full_name, email, incident_type, amount_owed, notes, incident_property_name)
         VALUES (%s, %s, %s, %s, %s, %s);
         """
         values = (
