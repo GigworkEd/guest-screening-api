@@ -72,18 +72,18 @@ async def add_bad_guest(request: Request):
         conn = psycopg2.connect(DATABASE_URL)
         cursor = conn.cursor()
 
-       query = """
+        query = """
         INSERT INTO bad_guests (full_name, email, incident_type, amount_owed, notes, incident_property)
         VALUES (%s, %s, %s, %s, %s, %s);
         """
-    values = (
-    data.get("full_name"),
-    data.get("email"),
-    data.get("violation"),
-    data.get("amount_owed"),
-    data.get("notes"),
-    data.get("incident_property")
-)
+        values = (
+            data.get("full_name"),
+            data.get("email"),
+            data.get("violation"),
+            data.get("amount_owed"),
+            data.get("notes"),
+            data.get("incident_property")
+        )
 
         cursor.execute(query, values)
         conn.commit()
@@ -91,7 +91,8 @@ async def add_bad_guest(request: Request):
         conn.close()
 
         return {"message": "Guest successfully flagged in the database."}
-    
+
     except Exception as e:
         print("ERROR inserting guest:", e)
         return JSONResponse(status_code=500, content={"error": str(e)})
+
