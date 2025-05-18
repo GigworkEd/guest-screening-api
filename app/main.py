@@ -73,7 +73,7 @@ async def add_bad_guest(request: Request):
         cursor = conn.cursor()
 
         query = """
-        INSERT INTO bad_guests (full_name, email, incident_type, amount_owed, notes, incident_property)
+        INSERT INTO bad_guests (full_name, email, incident_type, amount_owed, notes, property_name)
 
         VALUES (%s, %s, %s, %s, %s, %s);
         """
@@ -83,7 +83,7 @@ async def add_bad_guest(request: Request):
             data.get("violation"),  # ← keep this if frontend still uses "violation"
             data.get("amount_owed"),
             data.get("notes"),
-            data.get("incident_property")
+            data.get("incident_property") # Stays the same for now becasue of the front end
 )
 
         cursor.execute(query, values)
