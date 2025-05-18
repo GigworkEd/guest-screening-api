@@ -17,6 +17,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+print("✅ CORS middleware applied!")
 
 # Load Railway DB URL
 DATABASE_URL = os.getenv(
