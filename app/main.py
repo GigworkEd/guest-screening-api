@@ -33,6 +33,10 @@ def health_check():
 async def preflight_add_guest():
     return JSONResponse(content={"status": "preflight ok"})
 
+@app.options("/compare-reservations")
+async def preflight_compare_reservations():
+    return JSONResponse(content={"status": "preflight ok"})
+
 # Compare uploaded reservations with DB using fuzzy match
 @app.post("/compare-reservations")
 async def compare_reservations(file: UploadFile = File(...)):
