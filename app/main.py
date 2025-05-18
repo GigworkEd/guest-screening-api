@@ -5,9 +5,10 @@ from .utils import parse_and_normalize_csv
 import psycopg2
 import os
 
-app = FastAPI()  # ✅ Must come BEFORE CORS middleware
+# Initialize FastAPI app
+app = FastAPI()
 
-# ✅ CORRECT CORS setup
+# Apply CORS for Vercel frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://guest-screening-dashboard.vercel.app"],
@@ -16,22 +17,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# PostgreSQL DB connection (from Railway)
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://postgres:TozLcXkFfNLZKyYIiHIYpDEtbnfgdwxj@ballast.proxy.rlwy.net:40063/railway"
+)
 
-# Load Railway DB URL
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:TozLcXkFfNLZKyYIiHIYpDEtbnfgdwxj@ballast.proxy.rlwy.net:40063/railway")
-
-# Health check endpoint
+# Health check
 @app.get("/")
 def health_check():
     return {"message": "API is running"}
 
-# Compare uploaded reservation file against DB
+# Compare reservations endpoint
 @app.post("/compare-reservations")
 async def compare_reservations(file: UploadFile = File(...)):
     contents = await file.read()
     reservations = parse_and_normalize_csv(contents)
 
-    # Connect to PostgreSQL
     conn = psycopg2.connect(DATABASE_URL)
     cursor = conn.cursor()
 
@@ -55,30 +57,41 @@ async def compare_reservations(file: UploadFile = File(...)):
 
     return JSONResponse(content={"matches": matched})
 
-# Add a new flagged guest record
+# Handle preflight CORS request for POST /add-bad-guest
+@app.options("/add-bad-guest")
+async def preflight_add_guest():
+    return JSONResponse(content={"status": "preflight ok"})
+
+# Add flagged guest endpoint
 @app.post("/add-bad-guest")
 async def add_bad_guest(request: Request):
     data = await request.json()
+    print("Incoming guest data:", data)
 
-    conn = psycopg2.connect(DATABASE_URL)
-    cursor = conn.cursor()
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        cursor = conn.cursor()
 
-    query = """
-INSERT INTO bad_guests (full_name, email, violation, amount_owed, notes, incident_property)
-VALUES (%s, %s, %s, %s, %s, %s);
-"""
-values = (
-    data.get("full_name"),
-    data.get("email"),
-    data.get("violation"),
-    data.get("amount_owed"),
-    data.get("notes"),
-    data.get("incident_property")
-)
+        query = """
+        INSERT INTO bad_guests (full_name, email, violation, amount_owed, notes, incident_property)
+        VALUES (%s, %s, %s, %s, %s, %s);
+        """
+        values = (
+            data.get("full_name"),
+            data.get("email"),
+            data.get("violation"),
+            data.get("amount_owed"),
+            data.get("notes"),
+            data.get("incident_property")
+        )
 
-    cursor.execute(query, values)
-    conn.commit()
-    cursor.close()
-    conn.close()
+        cursor.execute(query, values)
+        conn.commit()
+        cursor.close()
+        conn.close()
 
-    return {"message": "Guest successfully flagged in the database."}
+        return {"message": "Guest successfully flagged in the database."}
+    
+    except Exception as e:
+        print("ERROR inserting guest:", e)
+        return JSONResponse(status_code=500, content={"error": str(e)})
