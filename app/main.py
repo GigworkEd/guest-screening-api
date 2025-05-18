@@ -17,7 +17,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-print("✅ CORS middleware applied!")
 
 # Load Railway DB URL
 DATABASE_URL = os.getenv(
@@ -60,8 +59,9 @@ async def compare_reservations(file: UploadFile = File(...)):
             db_name = guest[1].lower().strip()  # guest[1] is full_name
 
             similarity = fuzz.token_sort_ratio(input_name, db_name)
+            print(f"Checking {input_name} vs {db_name} → {similarity}")
 
-            if similarity >= 85:  # Match threshold
+            if similarity >= 70:  # Lowered threshold for better matching
                 matched.append({
                     "matched_name": db_name,
                     "incident_type": guest[6],
@@ -69,7 +69,7 @@ async def compare_reservations(file: UploadFile = File(...)):
                     "notes": guest[11],
                     "incident_property": guest[13]
                 })
-                break  # stop after first match
+                break
 
     cursor.close()
     conn.close()
