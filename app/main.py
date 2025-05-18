@@ -72,18 +72,17 @@ async def add_bad_guest(request: Request):
         conn = psycopg2.connect(DATABASE_URL)
         cursor = conn.cursor()
 
-        query = """
-        INSERT INTO bad_guests (full_name, email, incident_type, amount_owed, notes, property_name)
-
+       query = """
+        INSERT INTO bad_guests (full_name, email, incident_type, amount_owed, notes, incident_property)
         VALUES (%s, %s, %s, %s, %s, %s);
         """
-        values = (
-            data.get("full_name"),
-            data.get("email"),
-            data.get("violation"),  # ← keep this if frontend still uses "violation"
-            data.get("amount_owed"),
-            data.get("notes"),
-            data.get("incident_property") # Stays the same for now becasue of the front end
+    values = (
+    data.get("full_name"),
+    data.get("email"),
+    data.get("violation"),
+    data.get("amount_owed"),
+    data.get("notes"),
+    data.get("incident_property")
 )
 
         cursor.execute(query, values)
