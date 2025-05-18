@@ -42,7 +42,7 @@ async def preflight_compare_reservations():
 async def compare_reservations(file: UploadFile = File(...)):
     contents = await file.read()
     reservations = parse_and_normalize_csv(contents)
-
+    print("🧪 Parsed reservations:", reservations)
     conn = psycopg2.connect(DATABASE_URL)
     cursor = conn.cursor()
 
