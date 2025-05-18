@@ -64,18 +64,17 @@ async def add_bad_guest(request: Request):
     cursor = conn.cursor()
 
     query = """
-    INSERT INTO bad_guests (full_name, email, phone, violation, amount_owed, notes, incident_property)
-    VALUES (%s, %s, %s, %s, %s, %s, %s);
-    """
-    values = (
-        data.get("full_name"),
-        data.get("email"),
-        data.get("phone"),
-        data.get("violation"),
-        data.get("amount_owed"),
-        data.get("notes"),
-        data.get("incident_property")
-    )
+INSERT INTO bad_guests (full_name, email, violation, amount_owed, notes, incident_property)
+VALUES (%s, %s, %s, %s, %s, %s);
+"""
+values = (
+    data.get("full_name"),
+    data.get("email"),
+    data.get("violation"),
+    data.get("amount_owed"),
+    data.get("notes"),
+    data.get("incident_property")
+)
 
     cursor.execute(query, values)
     conn.commit()
